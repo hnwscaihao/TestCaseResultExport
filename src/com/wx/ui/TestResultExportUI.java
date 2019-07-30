@@ -1,4 +1,4 @@
-package com.gw.ui;
+package com.wx.ui;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -30,10 +30,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.gw.service.ExcelUtil;
-import com.gw.service.MyRunnable;
-import com.gw.util.Constants;
-import com.gw.util.MKSCommand;
+import com.wx.service.ExcelUtil;
+import com.wx.service.MyRunnable;
+import com.wx.util.Constants;
+import com.wx.util.MKSCommand;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;

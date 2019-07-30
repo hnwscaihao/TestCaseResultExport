@@ -1,4 +1,4 @@
-package com.gw.util;
+package com.wx.util;
 
 import java.awt.Color;
 import java.text.SimpleDateFormat;
@@ -31,8 +31,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import com.gw.service.ExcelUtil;
-import com.gw.ui.TestResultExportUI;
+import com.wx.service.ExcelUtil;
+import com.wx.ui.TestResultExportUI;
 
 /**
  * POI导出excel表格

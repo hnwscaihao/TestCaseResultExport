@@ -1,4 +1,4 @@
-package com.gw.util;
+package com.wx.util;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import com.gw.ui.TestResultExportUI;
 import com.mks.api.CmdRunner;
 import com.mks.api.Command;
 import com.mks.api.IntegrationPoint;
@@ -30,6 +29,7 @@ import com.mks.api.response.ItemList;
 import com.mks.api.response.Response;
 import com.mks.api.response.WorkItem;
 import com.mks.api.response.WorkItemIterator;
+import com.wx.ui.TestResultExportUI;
 
 public class MKSCommand {
 

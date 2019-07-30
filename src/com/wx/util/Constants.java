@@ -1,7 +1,7 @@
 /**
  * 系统参数工具类
  */
-package com.gw.util;
+package com.wx.util;
 
 public class Constants {
 

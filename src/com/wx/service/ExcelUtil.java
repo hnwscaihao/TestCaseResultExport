@@ -1,4 +1,4 @@
-package com.gw.service;
+package com.wx.service;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -44,10 +44,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.gw.ui.TestResultExportUI;
-import com.gw.util.GenerateXmlUtil;
-import com.gw.util.MKSCommand;
 import com.mks.api.response.APIException;
+import com.wx.ui.TestResultExportUI;
+import com.wx.util.GenerateXmlUtil;
+import com.wx.util.MKSCommand;
 
 @SuppressWarnings("all")
 public class ExcelUtil {

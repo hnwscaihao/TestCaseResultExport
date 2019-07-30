@@ -1,4 +1,4 @@
-package com.gw.service;
+package com.wx.service;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -10,9 +10,9 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import com.gw.ui.TestResultExportUI;
-import com.gw.util.Constants;
-import com.gw.util.MKSCommand;
+import com.wx.ui.TestResultExportUI;
+import com.wx.util.Constants;
+import com.wx.util.MKSCommand;
 @SuppressWarnings("all")
 public class MyRunnable implements Runnable {
 
