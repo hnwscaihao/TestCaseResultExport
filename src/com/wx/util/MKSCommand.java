@@ -51,7 +51,6 @@ public class MKSCommand {
 	private static String errorLog;
 	private static final String FIELDS = "fields";
 	private static final String CONTAINS = "Contains";
-	private static final String PARENT_FIELD = "Contained By";
 	
 	private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
@@ -321,8 +320,8 @@ public class MKSCommand {
 	}
 	
 	public List<Map<String, String>> allContents(String document, List<String> fieldList) throws APIException ,Exception {
-		List<Map<String, String>> returnResult = new ArrayList<Map<String,String>>();
-		Command command = new Command("im","issues");
+		List<Map<String, String>> returnResult = new ArrayList<Map<String, String>>();
+		Command command = new Command("im", "issues");
 		command.addOption(new Option(FIELDS, CONTAINS));
 		command.addSelection(document);
 		Response res = mksCmdRunner.execute(command);
@@ -330,86 +329,128 @@ public class MKSCommand {
 		SelectionList sl = new SelectionList();
 		List<String> fields = new ArrayList<>();
 		fields.add("ID");
-		if(!fieldList.contains(PARENT_FIELD)){//排序使用
-			fieldList.add(PARENT_FIELD);
-		}
-		if(fieldList != null) {
+		if (fieldList != null) {
 			fields.addAll(fieldList);
 		}
 		while (it.hasNext()) {
-				WorkItem wi = it.next();
-				ItemList il = (ItemList) wi.getField(CONTAINS).getList();
-				for (int i = 0; i < il.size(); i++) {
-					Item item = (Item) il.get(i);
-					String id = item.getId();
-					sl.add(id);
-				}
+			WorkItem wi = it.next();
+			ItemList il = (ItemList) wi.getField(CONTAINS).getList();
+			for (int i = 0; i < il.size(); i++) {
+				Item item = (Item) il.get(i);
+				String id = item.getId();
+				sl.add(id);
+			}
 		}
 		SelectionList contents = null;
-		if(sl != null&& sl.size()>=1){
-		 contents = contains(sl);
-		
-		if (contents.size() > 0) {
-			SelectionList contains = new SelectionList();
-			contains.add(contents);
-			while (true) {
-				SelectionList conteins = contains(contains);
-				if (conteins.size() < 1) {
-					break;
-				}
-				contents.add(conteins);
-				contains = new SelectionList();
-				contains.add(conteins);
-			}
-		}
-		contents.add(sl);
-		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-		if (contents.size() > 500) {
-			List<SelectionList> parallel = new ArrayList<SelectionList>();
-			SelectionList ids = new SelectionList();
-			for (int i = 0;; i++) {
-				if (i % 500 == 0 && ids.size() > 0) {
-					parallel.add(ids);
-					ids = new SelectionList();
-				}
-				ids.add(contents.getSelection(i));
-				if (i + 1 == contents.size()) {
-					parallel.add(ids);
-					break;
+		if (sl != null && sl.size() >= 1) {
+			contents = contains(sl);
+
+			if (contents.size() > 0) {
+				SelectionList contains = new SelectionList();
+				contains.add(contents);
+				while (true) {
+					SelectionList conteins = contains(contains);
+					if (conteins.size() < 1) {
+						break;
+					}
+					contents.add(conteins);
+					contains = new SelectionList();
+					contains.add(conteins);
 				}
 			}
-			for (SelectionList selectionList : parallel) {
-				list.addAll(queryIssues(selectionList, fields));
-			}
-		} else {
-			list.addAll(queryIssues(contents, fields));
-		}
-		String beforeParentId = document;
-		Integer startIndex = -1;
-		List<String> idRecord = new ArrayList<String> ();
-		for(int i=0; i<list.size(); i++) {
-			Map<String,String> node = list.get(i);
-			String parentId = node.get(PARENT_FIELD);
-			if(parentId == null || "".equals(parentId) || parentId.equals(document)) {
-				node.put(PARENT_FIELD, document);
-				returnResult.add(node);
-				idRecord.add(node.get("ID"));
-			}
-		}
-		for(int i=0; i<list.size(); i++) {
-			Map<String,String> node = list.get(i);
-			String parentId = node.get(PARENT_FIELD);
-			if(parentId != null && !"".equals(parentId) && !parentId.equals(document)) {
-				if(!beforeParentId.equals(parentId)){
-					beforeParentId = parentId;
-					startIndex = 1;
+			contents.add(sl);
+			List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+			if (contents.size() > 500) {
+				List<SelectionList> parallel = new ArrayList<SelectionList>();
+				SelectionList ids = new SelectionList();
+				for (int i = 0;; i++) {
+					if (i % 500 == 0 && ids.size() > 0) {
+						parallel.add(ids);
+						ids = new SelectionList();
+					}
+					ids.add(contents.getSelection(i));
+					if (i + 1 == contents.size()) {
+						parallel.add(ids);
+						break;
+					}
 				}
-				Integer parentIndex = idRecord.indexOf(parentId);
-				returnResult.add(parentIndex + startIndex, node);
-				idRecord.add(parentIndex + startIndex,node.get("ID"));
-				startIndex ++;
+				for (SelectionList selectionList : parallel) {
+					list.addAll(queryIssues(selectionList, fields));
+				}
+			} else {
+				list.addAll(queryIssues(contents, fields));
 			}
 		}
+		return returnResult;
+	}
+	
+	public List<List<Map<String, String>>> allContentsByHeading(String document, List<String> fieldList) throws APIException ,Exception {
+		List<List<Map<String, String>>> returnResult = new ArrayList<List<Map<String, String>>>();
+		List<String> firstContainIds = new ArrayList<>();//第一级ID
+		Command command = new Command("im", "issues");
+		command.addOption(new Option(FIELDS, CONTAINS));
+		command.addSelection(document);
+		Response res = mksCmdRunner.execute(command);
+		WorkItemIterator it = res.getWorkItems();
+		SelectionList sl = new SelectionList();
+		List<String> fields = new ArrayList<>();
+		fields.add("ID");
+		if (fieldList != null) {
+			fields.addAll(fieldList);
+		}
+		while (it.hasNext()) {
+			WorkItem wi = it.next();
+			ItemList il = (ItemList) wi.getField(CONTAINS).getList();
+			for (int i = 0; i < il.size(); i++) {
+				Item item = (Item) il.get(i);
+				String id = item.getId();
+				firstContainIds.add(id);
+			}
+		}
+		for(String id : firstContainIds){
+			sl = new SelectionList();
+			SelectionList contents = null;
+			sl.add(id);
+			if (sl != null && sl.size() >= 1) {
+				contents = contains(sl);
+				
+				if (contents.size() > 0) {
+					SelectionList contains = new SelectionList();
+					contains.add(contents);
+					while (true) {
+						SelectionList conteins = contains(contains);
+						if (conteins.size() < 1) {
+							break;
+						}
+						contents.add(conteins);
+						contains = new SelectionList();
+						contains.add(conteins);
+					}
+				}
+				sl.add(contents);
+				List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+				if (sl.size() > 500) {
+					List<SelectionList> parallel = new ArrayList<SelectionList>();
+					SelectionList ids = new SelectionList();
+					for (int i = 0;; i++) {
+						if (i % 500 == 0 && ids.size() > 0) {
+							parallel.add(ids);
+							ids = new SelectionList();
+						}
+						ids.add(sl.getSelection(i));
+						if (i + 1 == sl.size()) {
+							parallel.add(ids);
+							break;
+						}
+					}
+					for (SelectionList selectionList : parallel) {
+						list.addAll(queryIssues(selectionList, fields));
+					}
+				} else {
+					list.addAll(queryIssues(sl, fields));
+				}
+				returnResult.add(list);
+			}
 		}
 		return returnResult;
 	}
@@ -443,8 +484,7 @@ public class MKSCommand {
 					String fieldType = fieldObj.getDataType();
 					String value = fieldObj.getValueAsString()!=null?fieldObj.getValueAsString().toString():null;
 					value = parseDateVal(value, fieldType);
-					if(PARENT_FIELD.equals(field) && value!=null 
-							&& value.contains("[") && value.contains("]")){
+					if(value !=null && value.contains("[") && value.contains("]")){
 						value = value.substring(value.indexOf("[")+1, value.indexOf("]"));
 					}
 					if("[]".equals(value)){
@@ -514,7 +554,7 @@ public class MKSCommand {
 		List<String> fieldList = new ArrayList<>();
 		if (fieldList.isEmpty()) {
 			fieldList.add("ID");
-			fieldList.add("Descriptioon");
+			fieldList.add("Description");
 		}
 		return fieldList;
 	}
@@ -638,7 +678,7 @@ public class MKSCommand {
 		cmd.addOption(new Option("caseID", suiteID));
 		List<String> fields = new ArrayList<>();
 		fields.add("sessionID");
-		fields.add("verdictType"); 
+		fields.add("verdict"); 
 		fields.add("Annotation"); 
 		
 		MultiValue mv = new MultiValue();
@@ -670,6 +710,10 @@ public class MKSCommand {
 					WorkItem wi = wk.next();
 					for (String field : fields) {
 						Object value = wi.getField(field).getValue();
+						if(value instanceof Item){
+							Item item = (Item) value;
+							value = item.getId();
+						}
 						map.put(field, value);
 					}
 					result.add(map);

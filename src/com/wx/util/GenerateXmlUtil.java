@@ -226,16 +226,17 @@ public class GenerateXmlUtil {
 	 *            将表格数据设置为副表头; 参数1：起始行 参数2：终止行 参数3：起始列 参数4：终止列
 	 * @return
 	 */
-	public static Workbook exportComplexExcel(List<List<String>> listHeaders, List<List<Object>> datas,
-			List<String> needMoreWidthField, String name, List<CellRangeAddress> merges) {
+	public static Workbook exportComplexExcel(HSSFWorkbook work, List<List<String>> listHeaders, List<List<Object>> datas,
+			List<String> needMoreWidthField, String sheetName, List<CellRangeAddress> merges) {
 
 		TestResultExportUI.logger.info("reverse is data:" + datas);
 		if (listHeaders == null || listHeaders.size() < 1 || listHeaders.get(0) == null) {
 			return null;
 		}
-
-		HSSFWorkbook work = new HSSFWorkbook();
-		HSSFSheet sheet = work.createSheet(name);
+		if(work == null){
+			work = new HSSFWorkbook();
+		}
+		HSSFSheet sheet = work.createSheet(sheetName);
 		sheet.autoSizeColumn(1, true);
 		List<String> headers = listHeaders.get(0);
 		List<String> headers2 = listHeaders.size() > 1 ? listHeaders.get(1) : new ArrayList<String>();

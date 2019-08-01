@@ -147,7 +147,7 @@ public class TestResultExportUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Export Test Case & Result");
 		setResizable(false);
-		setBounds(100, 100, 820, 252);
+		setBounds(100, 100, 714, 252);
 		contentPane = new JPanel();
 		contentPane.setForeground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -155,7 +155,7 @@ public class TestResultExportUI extends JFrame {
 		contentPane.setLayout(null);
 		progressBar = new JProgressBar();
 		progressBar.setString("Exporting, please wait!");
-		progressBar.setBounds(82, 133, 539, 24);
+		progressBar.setBounds(82, 133, 361, 24);
         // 设置当前进度值
         getProgressBar().setValue(0);
         getProgressBar().setMinimum(MIN_PROGRESS);
@@ -185,12 +185,12 @@ public class TestResultExportUI extends JFrame {
 			}
 		});
 		button.setForeground(Color.BLACK);
-		button.setBounds(662, 127, 137, 30);
+		button.setBounds(526, 127, 137, 30);
 		contentPane.add(button);
 		label_1 = new JLabel("< Please select an export path />");
 		label_1.setForeground(Color.BLACK);
 		label_1.setBorder(new EtchedBorder());
-		label_1.setBounds(82, 52, 539, 37);
+		label_1.setBounds(82, 52, 361, 37);
 		contentPane.add(label_1);
 		
 		JButton button_1 = new JButton("Browse");
@@ -199,7 +199,7 @@ public class TestResultExportUI extends JFrame {
 				TestResultExportUI.this.browseDocAction();//
 			}
 		});
-		button_1.setBounds(662, 56, 137, 29);
+		button_1.setBounds(526, 56, 137, 29);
 		contentPane.add(button_1);
 		
 		JLabel label = new JLabel("*");
@@ -278,6 +278,7 @@ public class TestResultExportUI extends JFrame {
 		} else {
 			TestResultExportUI.logger.info("No ID was obtained!!! :" + issueCount); 
 		}
+		tsIds.add("69");
 		if (tsIds.size() > 0) {//如果选中的id集合不为空，通过id获取条目简要信息
 			List<Map<String, String>> itemByIds = cmd.getItemByIds(tsIds, Arrays.asList("ID", "Type","Document Short Title"));
 			List<String> notTSList = new ArrayList<>();
