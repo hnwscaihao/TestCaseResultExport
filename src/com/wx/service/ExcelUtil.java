@@ -86,6 +86,8 @@ public class ExcelUtil {
 	public static final Map<String, String> FIELD_TYPE_RECORD = new HashMap<String, String>();
 
 	public static final Map<String, String> IMPORT_DOCUMENT_TYPE = new HashMap<String, String>();
+	
+	public static final Map<String, String> USER_MAP = new HashMap<String,String>();
 
 	/**
 	 * 解析XML
@@ -244,7 +246,6 @@ public class ExcelUtil {
 			}
 		}
 		FIELD_TYPE_RECORD.putAll(cmd.getAllFieldType(importFields, PICK_FIELD_RECORD));
-//		replaceLogid(cmd);// logid 替换为FullName(工号)
 
 		String sheetName = "Test Cases";
 		/** 获取 Pick 值信息 */
@@ -349,7 +350,8 @@ public class ExcelUtil {
 					
 					//导出 测试结果数据
 					getTestResult(cmd, testCase, data, firstHeaders, secondHeaders);
-				} 
+				}
+				replaceLogid(cmd);// logid 替换为FullName(工号)
 				listHeaders.add(firstHeaders);// 添加完第一行标题
 				listHeaders.add(secondHeaders);// 添加完第二行标题
 				GenerateXmlUtil.exportComplexExcel(wookbook, listHeaders, datas, needMoreWidthField, sheetName,
@@ -413,9 +415,17 @@ public class ExcelUtil {
 		for (List<Object> list : datas) {
 			for (int p = 0; p < list.size(); p++) {
 				Object obj = list.get(p);
-				String fullName = cmd.getUserNames(obj.toString());
-				if (null != fullName && fullName.length() > 0) {
-					list.set(p, fullName + "（" + list.get(p) + "）");
+				String loginId = obj.toString();
+				if(null != loginId && !"".equals(loginId)){
+					String fullName = USER_MAP.get(loginId);
+					if(null == fullName){
+						fullName = cmd.getUserNames(obj.toString());
+						if(null != fullName && !"".equals(fullName))
+							USER_MAP.put(loginId, fullName);
+					}
+					if (null != fullName && !"".equals(fullName)) {
+						list.set(p, fullName + "（" + list.get(p) + "）");
+					}
 				}
 
 			}
