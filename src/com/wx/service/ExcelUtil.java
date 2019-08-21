@@ -61,7 +61,7 @@ public class ExcelUtil {
 	private List<String> realStepFields = new ArrayList<>();
 	private List<String> resultHeaders = new ArrayList<>();
 	private Map<String, String> inputCountMap = new HashMap<String, String>();
-	private String xmlType = "Test Suite";
+	public static final String TEST_SUITE = "Test Suite";
 	private String SEQUENCE = "Sequence";
 	private List<List<Object>> datas = new ArrayList<>();
 	private List<List<List<Object>>> allDatas = new ArrayList<>();
@@ -89,6 +89,7 @@ public class ExcelUtil {
 	
 	public static final Map<String, String> USER_MAP = new HashMap<String,String>();
 
+	public static final Map<String, String> All_USER_MAP = new HashMap<>();
 	/**
 	 * 解析XML
 	 * 
@@ -117,8 +118,8 @@ public class ExcelUtil {
 						IMPORT_DOCUMENT_TYPE.put(typeName, documentType);
 						parseData(item, allFields, ptcFields);// 解析数据，往Excel模板汇中存放field
 					}
-					xmlConfig.put(xmlType, allFields);
-					contentColumns.put(xmlType, ptcFields);
+					xmlConfig.put(TEST_SUITE, allFields);
+					contentColumns.put(TEST_SUITE, ptcFields);
 				}
 			}
 		} catch (ParserConfigurationException e) {
@@ -141,7 +142,6 @@ public class ExcelUtil {
 	 * @param ptcFields
 	 */
 	private void parseData(Element exportType, List<Map<String, String>> list, List<String> ptcFields) {
-		xmlType = exportType.getAttribute("name");
 		NodeList nodeFields = exportType.getElementsByTagName("excelField");
 		for (int j = 0; j < nodeFields.getLength(); j++) {
 			Map<String, String> map = new HashMap<>();// 存放所有fields Excel模板
@@ -153,6 +153,7 @@ public class ExcelUtil {
 			if (!field.equals("-") && !type.equals("Test Result") && !type.equals("Test Step")) {
 				ptcFields.add(field);// 如果模板中符合以上情况，则直接将field存放到系统自带field的list中
 			}
+			HEADER_MAP.put(fieldName, field);
 			if ("Test Step".equals(type)) {
 				stepHeaders.add(fieldName);
 				realStepFields.add(fieldName);
@@ -177,7 +178,6 @@ public class ExcelUtil {
 					contentHeaders.add(fieldName);
 					headers.add(fieldName);
 					headerTwos.add("-");
-					HEADER_MAP.put(fieldName, field);
 					HEADER_COLOR_RECORD.put(fieldName, titleColor);
 				}
 			}
@@ -248,16 +248,17 @@ public class ExcelUtil {
 		FIELD_TYPE_RECORD.putAll(cmd.getAllFieldType(importFields, PICK_FIELD_RECORD));
 
 		String sheetName = "Test Cases";
+		List<String> sheetNames = new ArrayList<>();
 		/** 获取 Pick 值信息 */
 		HSSFWorkbook wookbook = new HSSFWorkbook();
 		for (String suitId : tObjIds) {
-			List<String> caseFields = contentColumns.get(xmlType);
+			List<String> caseFields = contentColumns.get(TEST_SUITE);
 			caseFields.add("Contains");
 			caseFields.add("Test Steps");//合并单元格用
 //			List<Map<String, String>> testCaseItem = cmd.allContents(suitId, caseFields);// 测试用例字段
 			List<List<Map<String,String>>> allTestCaseItems = cmd.allContentsByHeading(suitId, caseFields);//测试用例字段
 			List<String> testStepFields = cmd.getTestStepFields();// testStep字段集合
-			List<Map<String, String>> list = this.xmlConfig.get(xmlType);
+			List<Map<String, String>> list = this.xmlConfig.get(TEST_SUITE);
 			int col = 0;
 			for(List<Map<String,String>> testCaseItems : allTestCaseItems){//根据一级Heading拆分写入不同Sheet
 				cellList = new ArrayList<>();
@@ -351,9 +352,16 @@ public class ExcelUtil {
 					//导出 测试结果数据
 					getTestResult(cmd, testCase, data, firstHeaders, secondHeaders);
 				}
-				replaceLogid(cmd);// logid 替换为FullName(工号)
+				cmd.getAllUsers();
+				replaceLogid();// logid 替换为FullName(工号)
 				listHeaders.add(firstHeaders);// 添加完第一行标题
 				listHeaders.add(secondHeaders);// 添加完第二行标题
+				if(sheetNames.contains(sheetName)){
+					sheetName = sheetName + "(2)";
+					sheetNames.add(sheetName);
+				}else
+					sheetNames.add(sheetName);
+					
 				GenerateXmlUtil.exportComplexExcel(wookbook, listHeaders, datas, needMoreWidthField, sheetName,
 						cellList);
 			}
@@ -410,24 +418,25 @@ public class ExcelUtil {
 	 * @param cmd
 	 * @throws APIException
 	 */
-	private void replaceLogid(MKSCommand cmd) throws APIException {
+	private void replaceLogid() throws APIException {
 		// logid 替换为FullName(工号)
 		for (List<Object> list : datas) {
 			for (int p = 0; p < list.size(); p++) {
 				Object obj = list.get(p);
-				String loginId = obj.toString();
-				if(null != loginId && !"".equals(loginId)){
-					String fullName = USER_MAP.get(loginId);
-					if(null == fullName){
-						fullName = cmd.getUserNames(obj.toString());
-						if(null != fullName && !"".equals(fullName))
-							USER_MAP.put(loginId, fullName);
-					}
-					if (null != fullName && !"".equals(fullName)) {
-						list.set(p, fullName + "（" + list.get(p) + "）");
+				String header = headers.get(p);
+				if(header == null || "-".equals(header))
+					header = headerTwos.get(p);
+				String field = HEADER_MAP.get(header);
+				if(field != null ){
+					if("user".equalsIgnoreCase(FIELD_TYPE_RECORD.get(field))){
+						String loginId = obj.toString();
+						String fullName = USER_MAP.get(loginId);
+						if(fullName == null || "".equals(fullName))
+							list.set(p, loginId);
+						else
+							list.set(p, fullName + "(" + loginId + ")");
 					}
 				}
-
 			}
 		}
 	}

@@ -278,7 +278,6 @@ public class TestResultExportUI extends JFrame {
 		} else {
 			TestResultExportUI.logger.info("No ID was obtained!!! :" + issueCount); 
 		}
-		tsIds.add("69");
 		if (tsIds.size() > 0) {//如果选中的id集合不为空，通过id获取条目简要信息
 			List<Map<String, String>> itemByIds = cmd.getItemByIds(tsIds, Arrays.asList("ID", "Type","Document Short Title"));
 			List<String> notTSList = new ArrayList<>();
@@ -286,6 +285,11 @@ public class TestResultExportUI extends JFrame {
 				DOCUMENT_TYPE = map.get("Type");
 				String id = map.get("ID");
 				documentName = map.get("Document Short Title");
+				if(!ExcelUtil.TEST_SUITE.equals(DOCUMENT_TYPE)){
+					JOptionPane.showConfirmDialog(contentPane, "Please Select the " + ExcelUtil.TEST_SUITE + " to Export!");//导出路径
+					System.exit(0);
+					return null;
+				}
 			}
 			if (notTSList.size() > 0) {
 //				throw new Exception("This item " + notTSList + " is not [ " + documentType + " ]! Please  select the right type!");

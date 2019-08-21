@@ -29,6 +29,7 @@ import com.mks.api.response.ItemList;
 import com.mks.api.response.Response;
 import com.mks.api.response.WorkItem;
 import com.mks.api.response.WorkItemIterator;
+import com.wx.service.ExcelUtil;
 import com.wx.ui.TestResultExportUI;
 
 public class MKSCommand {
@@ -508,16 +509,6 @@ public class MKSCommand {
 		return returnResult;
 	}
 	
-	public String getUserNames(String userId) throws APIException{
-		if(userId!=null && !"".equals(userId)){
-			List<String> listUser = new ArrayList<String>();
-			listUser.add(userId);
-			return getUserNames(listUser);
-		}else{
-			return "";
-		}
-	}
-	
 	public static String parseDateVal(String value, String fieldType){
 		if("java.util.Date".equals(fieldType)){
 			value = FORMAT.format(new Date(value));
@@ -525,29 +516,28 @@ public class MKSCommand {
 		return value;
 	}
 	
-	public String getUserNames(List<String> userIds) throws APIException{
-		String user = "";
-		if(userIds!=null && userIds.size()>0){
-			Command cmd = new Command(Command.IM, "users");
-			cmd.addOption(new Option("fields","name,fullname,email,isActive"));
-			for(String userId : userIds){
-				cmd.addSelection(userId);
-			}
-			Response res = mksCmdRunner.execute(cmd);
-			if (res != null) {
-				WorkItemIterator iterator = res.getWorkItems();
-				while(iterator.hasNext()) {
-					WorkItem item = iterator.next();
-					if(item.getField("isActive").getValueAsString().equalsIgnoreCase("true")) {
-						user = user + item.getField("fullname").getValueAsString() + ",";
-					}
+	/**
+	 * 查询系统所有用户信息
+	 * @return
+	 * @throws APIException
+	 */
+	public void getAllUsers() throws APIException{
+		String userName = null;
+		String loginId = null;
+		Command cmd = new Command(Command.IM, "users");
+		cmd.addOption(new Option("fields", "name,fullname,email,isActive"));
+		Response res = mksCmdRunner.execute(cmd);
+		if (res != null) {
+			WorkItemIterator iterator = res.getWorkItems();
+			while (iterator.hasNext()) {
+				WorkItem item = iterator.next();
+				if (item.getField("isActive").getValueAsString().equalsIgnoreCase("true")) {
+					userName = item.getField("fullname").getValueAsString();
+					loginId = item.getField("name").getValueAsString();
+					ExcelUtil.USER_MAP.put(loginId, userName);
 				}
 			}
-			if(user.length()>0){
-				user = user.substring(0, user.length()-1);
-			}
 		}
-		return user;
 	}
 	
 	public List<String> getTestStepFields() throws APIException {
