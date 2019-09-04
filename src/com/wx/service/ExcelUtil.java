@@ -297,10 +297,12 @@ public class ExcelUtil {
 					String sub_sub_sequence = null;
 					data = new ArrayList<>(headers.size());// 行数据
 					datas.add(data);// 拼接完所有数据 为一行
-					for (String header : headers) {
+					for (int i = 0; i<headers.size(); i++) {
+						String header = headers.get(i);
+						String value = "";
 						if(contentHeaders.contains(header)){
 							String realField = HEADER_MAP.get(header);
-							String value = realField == null ? ""
+							value = realField == null ? ""
 									: testCase.get(realField) == null ? "" : testCase.get(realField);
 							if (SEQUENCE.equals(header)) {//截取Sequence
 								if(value.indexOf("_")>-1){
@@ -315,10 +317,8 @@ public class ExcelUtil {
 								value = sub_sequence;
 							else if("Sub-Sub-Sequence".equals(header))
 								value = sub_sub_sequence;
-							data.add(headers.indexOf(header), value);
-						}else
-							data.add(headers.indexOf(header), "");
-						
+						}
+						data.add(i, value);
 						// 根据Test Step 合并单元格
 					}
 					dataIndex = datas.size() + 2;//当前用例列的数据行数
